@@ -5,8 +5,7 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 
-
-class EditorialProjectIndexRequest extends FormRequest
+class EditorialProjectDestroyRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -16,13 +15,6 @@ class EditorialProjectIndexRequest extends FormRequest
     public function authorize()
     {
         return Auth::check();
-    }
-
-    protected function prepareForValidation()
-    {
-        if ($this->has('with')) {
-            $this->merge(['with' => explode(',', $this->with)]); // Da stringa author,log,rel1 => ['author','log','rel1']
-        }
     }
 
     /**

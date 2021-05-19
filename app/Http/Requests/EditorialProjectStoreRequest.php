@@ -3,7 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Auth;
+use Illuminate\Support\Facades\Auth;
 
 class EditorialProjectStoreRequest extends FormRequest
 {
@@ -14,7 +14,7 @@ class EditorialProjectStoreRequest extends FormRequest
      */
     public function authorize()
     {
-        return true;
+        return Auth::check();
     }
 
     /**
@@ -28,7 +28,7 @@ class EditorialProjectStoreRequest extends FormRequest
             //
             'title' => 'required | string',
             'sector_id' => 'required | exists:sectors,id',
-            'author_id' => 'required | exists:users,id'
+            'author_id' => 'sometimes | exists:users,id',
         ];
     }
 }

@@ -19,8 +19,7 @@ class EditorialProjectLog extends Model
      *
      * @var string
      */
-    protected $table = 'editorial_project_log';
-    public $timestamps = false;
+    protected $table = 'editorial_project_logs';
 
     /************************************************************************************
      * RELATIONS

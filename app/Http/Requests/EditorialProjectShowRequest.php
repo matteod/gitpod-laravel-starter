@@ -1,8 +1,9 @@
 <?php
 
-namespace App\Http\Requests;
+namespace AppHttpRequests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Auth;
 
 class EditorialProjectShowRequest extends FormRequest
 {
@@ -13,7 +14,19 @@ class EditorialProjectShowRequest extends FormRequest
      */
     public function authorize()
     {
-        return true;
+        return Auth::check();
+    }
+
+    /**
+     * Prepare for validation
+     */
+    protected function prepareForValidation()
+    {
+        //explode trasforma una stringa in una array
+        // author,log => explode => ['author','log']
+        if ($this->has('with')) {
+            $this->merge(['with' => explode(',', $this->with)]);
+        }
     }
 
     /**
