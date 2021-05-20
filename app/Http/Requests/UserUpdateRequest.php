@@ -5,7 +5,7 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 
-class EditorialProjectShowRequest extends FormRequest
+class UserUpdateRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -18,18 +18,6 @@ class EditorialProjectShowRequest extends FormRequest
     }
 
     /**
-     * Prepare for validation
-     */
-    protected function prepareForValidation()
-    {
-        //explode trasforma una stringa in una array
-        // author,log => explode => ['author','log']
-        if ($this->has('with')) {
-            $this->merge(['with' => explode(',', $this->with)]);
-        }
-    }
-
-    /**
      * Get the validation rules that apply to the request.
      *
      * @return array
@@ -37,7 +25,9 @@ class EditorialProjectShowRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'name' => 'sometimes|string',
+            'email' => 'sometimes|required|email|unique:users,email',
+            'role_id' => 'sometimes|exists:roles,id',
         ];
     }
 }

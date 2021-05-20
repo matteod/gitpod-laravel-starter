@@ -5,7 +5,7 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 
-class EditorialProjectShowRequest extends FormRequest
+class UserIndexRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -18,12 +18,11 @@ class EditorialProjectShowRequest extends FormRequest
     }
 
     /**
-     * Prepare for validation
+     * Prepare inputs for validation
      */
     protected function prepareForValidation()
     {
-        //explode trasforma una stringa in una array
-        // author,log => explode => ['author','log']
+        // Transform relations into array
         if ($this->has('with')) {
             $this->merge(['with' => explode(',', $this->with)]);
         }
@@ -37,7 +36,8 @@ class EditorialProjectShowRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'with' => 'array|nullable',
+            'text' => 'string|nullable',
         ];
     }
 }
