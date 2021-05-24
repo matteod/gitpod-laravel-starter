@@ -9,14 +9,10 @@ use App\Http\Requests\EditorialProjectShowRequest;
 use App\Http\Requests\EditorialProjectStoreRequest;
 use App\Http\Requests\EditorialProjectUpdateRequest;
 use App\Http\Resources\EditorialProjectResource;
-use App\Jobs\Store\EditorialProjectLogJob;
 use App\Models\EditorialProject;
-use App\Models\EditorialProjectLog;
+use App\Models\Role;
 use Exception;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
-use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -40,6 +36,10 @@ class EditorialProjectController extends Controller
             $editorial_projects->where(function ($query) use ($text) {
                 $query->where('title', 'like', '%' . $text . '%');
             });
+        }
+
+        if (!Auth::user()->isAdmin()) {
+            $editorial_projects->byUserRole(Auth::user()->role()['key']);
         }
 
         // Filter by trashed
@@ -131,9 +131,11 @@ class EditorialProjectController extends Controller
 
         try {
 
-            $editorial_project->update($request->only(['title', 'sector_id', 'is_approved_by_ceo']));
+            $editorial_project->update($request->only(['title', 'sector_id']));
 
-            //StoreEditorialProjectLogJob::dispatchAfterResponse(Auth::id(), $editorial_project->id, EditorialProjectLog::ACTION_UPDATE);
+            // Controllare che il ruolo dell'utente possa effettivamente fare l'update
+
+
 
             DB::commit();
         } catch (Exception $exception) {
@@ -155,8 +157,6 @@ class EditorialProjectController extends Controller
     public function destroy(EditorialProjectDestroyRequest $request, EditorialProject $editorial_project): Response
     {
         $editorial_project->delete();
-
-        //StoreEditorialProjectLogJob::dispatchAfterResponse(Auth::id(), $editorial_project->id, EditorialProjectLog::ACTION_DESTROY);
 
         return response(null, 204);
     }

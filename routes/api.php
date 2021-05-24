@@ -15,7 +15,8 @@ use Illuminate\Support\Facades\Route;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
-Route::post('login',  [AuthController::class, 'login'])->name('login');
+// Login route
+Route::post('login', [AuthController::class, 'login']);
 
 Route::group([
   'middleware' => ['auth:sanctum']

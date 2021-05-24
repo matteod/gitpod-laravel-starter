@@ -9,19 +9,37 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 class Role extends Model
 {
     use HasFactory;
-    CONST ROLE_EDITORIAL_DESIGN_MANAGER = 'editorial-design-manager';
-    CONST ROLE_EDITORIAL_PROJECT_MANAGER = 'editorial-project-manager';
-    CONST ROLE_ADV_MANAGER = 'adv-manager';
-    CONST ROLE_SALES_MANAGER = 'sales-manager';
+
+    /************************************************************************************
+     * CONSTANTS
+     */
+
+    CONST ROLE_EDITORIAL_DESIGN_MANAGER = 'editorial-design-managers';
+    CONST ROLE_EDITORIAL_RESPONSIBLE = 'editorial-responsible';
+    CONST ROLE_EDITORIAL_DIRECTOR = 'editorial-director';
+    CONST ROLE_SALES_DIRECTOR = 'sales-director';
     CONST ROLE_CEO = 'ceo';
     CONST ROLE_ADMIN = 'admin';
+
+    /**
+     * The table associated with the model
+     *
+     * @var string
+     */
     protected $table = 'roles';
 
-    public function users(): BelongsToMany {
+    /************************************************************************************
+     * RELATIONS
+     */
 
-      return $this->belongsToMany(User::class, 'user_role');
-
+    /**
+     * Get related users
+     *
+     * @return BelongsToMany
+     */
+    public function users(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class,'user_role');
     }
-
 
 }
