@@ -7,18 +7,20 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
-class EditorialProjectsErrors extends Mailable
+class EditorialProjectErrorsMail extends Mailable
 {
     use Queueable, SerializesModels;
+
+    protected $data;
 
     /**
      * Create a new message instance.
      *
      * @return void
      */
-    public function __construct()
+    public function __construct($data)
     {
-        //
+        $this->data = $data;
     }
 
     /**
@@ -28,6 +30,10 @@ class EditorialProjectsErrors extends Mailable
      */
     public function build()
     {
-        return $this->markdown('emails.editorial-project-errors');
+        return $this->subject('Errori piani editoriali')
+            ->from('no-reply@pe.com')
+            ->markdown('emails.editorial-project-errors', [
+                'data' => $this->data
+            ]);
     }
 }

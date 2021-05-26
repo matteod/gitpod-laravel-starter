@@ -5,7 +5,6 @@ namespace App\Models;
 use App\Jobs\StoreEditorialProjectLogJob;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -102,6 +101,13 @@ class EditorialProject extends Model
      * SCOPES
      */
 
+    /**
+     * Filters projects by user role
+     *
+     * @param $query
+     * @param $role
+     * @return mixed
+     */
     public function scopeByUserRole($query, $role)
     {
         switch ($role) {
@@ -125,4 +131,68 @@ class EditorialProject extends Model
                     ->where('is_approved_by_ceo', false);
         }
     }
+
+    /**
+     * Filter data by errors
+     *
+     * @param $query
+     */
+    public function scopeHaveErrors($query)
+    {
+        $query->where(function ($q) {
+            $q->where('is_approved_by_ceo', true)->where(function ($sub) {
+                $sub->where('is_approved_by_editorial_responsible', false)
+                    ->orWhere('is_approved_by_sales_director', false)
+                    ->orWhere('is_approved_by_editorial_director', false);
+            })->orWhere('is_approved_by_editorial_director', true)->where(function ($sub) {
+                $sub->where('is_approved_by_sales_director', false)
+                    ->orWhere('is_approved_by_editorial_director', false);
+            });
+        });
+    }
+
+    /************************************************************************************
+     * FUNCTIONS
+     */
+
+    /**
+     * Check if user can update flags
+     *
+     * @param $role
+     * @return bool
+     */
+    public function userRoleCanUpdateFlags($role): bool
+    {
+        switch ($role) {
+            case Role::ROLE_CEO:
+                return $this->is_approved_by_editorial_director && $this->is_approved_by_editorial_responsible && $this->is_approved_by_sales_director;
+            case Role::ROLE_EDITORIAL_DIRECTOR:
+                return !$this->is_approved_by_ceo && $this->is_approved_by_editorial_responsible && $this->is_approved_by_sales_director;
+            case Role::ROLE_SALES_DIRECTOR:
+            case Role::ROLE_EDITORIAL_RESPONSIBLE:
+                return !$this->is_approved_by_ceo && !$this->is_approved_by_editorial_director;
+            default:
+                return false;
+        }
+    }
+
+    /**
+     * Count errors for
+     *
+     * @return int
+     */
+    public function countErrors(): int
+    {
+        $errors = 0;
+        $roles = [Role::ROLE_CEO, Role::ROLE_EDITORIAL_DIRECTOR, Role::ROLE_SALES_DIRECTOR, Role::ROLE_EDITORIAL_RESPONSIBLE];
+
+        foreach ($roles as $role) {
+            if (!$this->userRoleCanUpdateFlags($role)) {
+                $errors++;
+            }
+        }
+
+        return $errors;
+    }
+
 }

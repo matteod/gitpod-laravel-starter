@@ -11,6 +11,7 @@ use App\Http\Requests\EditorialProjectUpdateRequest;
 use App\Http\Resources\EditorialProjectResource;
 use App\Models\EditorialProject;
 use App\Models\Role;
+use App\Models\User;
 use Exception;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
@@ -25,21 +26,22 @@ class EditorialProjectController extends Controller
      * @param EditorialProjectIndexRequest $request
      * @return AnonymousResourceCollection
      */
-    public function index(EditorialProjectIndexRequest $request): AnonymousResourceCollection
+    public function index(EditorialProjectIndexRequest $request)
     {
+
         $per_page = $request->query('per_page') ?: 15;
 
         $editorial_projects = EditorialProject::query();
+
+        if (!Auth::user()->isAdmin()) {
+            $editorial_projects->byUserRole(Auth::user()->roleKey());
+        }
 
         // Filter by text
         if ($text = $request->query('text')) {
             $editorial_projects->where(function ($query) use ($text) {
                 $query->where('title', 'like', '%' . $text . '%');
             });
-        }
-
-        if (!Auth::user()->isAdmin()) {
-            $editorial_projects->byUserRole(Auth::user()->role()['key']);
         }
 
         // Filter by trashed
@@ -133,9 +135,26 @@ class EditorialProjectController extends Controller
 
             $editorial_project->update($request->only(['title', 'sector_id']));
 
-            // Controllare che il ruolo dell'utente possa effettivamente fare l'update
+            $role_key = Auth::user()->roleKey();
 
-
+            if (!Auth::user()->isAdmin() && $editorial_project->userRoleCanUpdateFlags($role_key)) {
+                switch ($role_key) {
+                    case Role::ROLE_CEO:
+                        $editorial_project->update($request->only(['is_approved_by_ceo']));
+                        break;
+                    case Role::ROLE_EDITORIAL_DIRECTOR:
+                        $editorial_project->update($request->only(['is_approved_by_editorial_director']));
+                        break;
+                    case Role::ROLE_SALES_DIRECTOR:
+                        $editorial_project->update($request->only(['is_approved_by_sales_director']));
+                        break;
+                    case Role::ROLE_EDITORIAL_RESPONSIBLE:
+                        $editorial_project->update($request->only(['is_approved_by_editorial_responsible']));
+                        break;
+                    default:
+                        abort(403, 'Invalid Role');
+                }
+            }
 
             DB::commit();
         } catch (Exception $exception) {

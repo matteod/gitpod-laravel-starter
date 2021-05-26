@@ -2,11 +2,10 @@
 
 namespace App\Console\Commands;
 
-use App\Mail\EditorialProjectsErrors;
+use App\Jobs\SendEmailsJob;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Mail;
 
-class SendEmails extends Command
+class SendEmailsCommand extends Command
 {
     /**
      * The name and signature of the console command.
@@ -20,7 +19,7 @@ class SendEmails extends Command
      *
      * @var string
      */
-    protected $description = 'Command description';
+    protected $description = 'Send error emails';
 
     /**
      * Create a new command instance.
@@ -39,7 +38,6 @@ class SendEmails extends Command
      */
     public function handle()
     {
-        Mail::to('info@pianoeditoriale.it')->send(new EditorialProjectsErrors() );
-        return 0;
+        SendEmailsJob::dispatch();
     }
 }
